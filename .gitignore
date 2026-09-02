@@ -1,0 +1,10 @@
+mandelbrot
+*.o
+mandelbrot_afsr_*.pgm
+times.txt
+*.tar
+tests/out/*
+!tests/out/.gitkeep
+*.swp
+.DS_Store
+evidencias.log

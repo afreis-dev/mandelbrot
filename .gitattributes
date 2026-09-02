@@ -1,0 +1,4 @@
+# Projeto compilado/testado no WSL2 (gcc/make Linux) — força LF em todo
+# arquivo de texto independente da config local do Git no Windows, pra
+# nunca quebrar o Makefile (sensível a TAB) nem os scripts de teste.
+* text=auto eol=lf
