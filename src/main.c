@@ -5,8 +5,8 @@
  * sobre um unico buffer de iteracoes reaproveitado entre elas, escrevendo
  * um .pgm por implementacao e um times.txt com as 4 medicoes.
  *
- * Fase 5: serial + OpenMP + Pthreads1 existem. Pthreads2 entra na Fase 6
- * -- ate la, times.txt mostra 0.000000s pra ela.
+ * Fase 6: as 4 implementacoes existem (serial, OpenMP, Pthreads1 com
+ * divisao estatica, Pthreads2 com dispatcher dinamico).
  */
 
 #include <stdio.h>
@@ -15,6 +15,7 @@
 #include "common.h"
 #include "openmp.h"
 #include "pthreads1.h"
+#include "pthreads2.h"
 #include "serial.h"
 
 int main(int argc, char *argv[]) {
@@ -63,7 +64,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    /* TODO Fase 6: mandelbrot_run_pthreads2 + mandelbrot_afsr_pthreads2.pgm */
+    if (mandelbrot_run_pthreads2(&params, iterations, &t_pthreads2) != 0) {
+        free(iterations);
+        return 1;
+    }
+    if (mandelbrot_write_pgm("mandelbrot_afsr_pthreads2.pgm", iterations, &params) != 0) {
+        free(iterations);
+        return 1;
+    }
 
     if (mandelbrot_write_times("times.txt", t_serial, t_openmp, t_pthreads1, t_pthreads2) != 0) {
         free(iterations);
