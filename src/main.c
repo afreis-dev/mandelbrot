@@ -1,17 +1,19 @@
 /*
  * mandelbrot - Implementacao 2 (Infraestrutura de Software, CESAR School)
  *
- * Fase 2: laco serial PROVISORIO, so para validar as funcoes nucleo de
- * common.c (pixel->complexo, escape, normalizacao, escrita do .pgm)
- * contra o caso oficial teste1_serial.txt antes de estruturar o projeto
- * de verdade. Este laco e extraido para src/serial.c na Fase 3, junto
- * com a orquestracao real das 4 implementacoes e o times.txt.
+ * Orquestra as 4 implementacoes (serial, OpenMP, Pthreads1, Pthreads2)
+ * sobre um unico buffer de iteracoes reaproveitado entre elas, escrevendo
+ * um .pgm por implementacao e um times.txt com as 4 medicoes.
+ *
+ * Fase 3: so a serial existe de verdade. OpenMP/Pthreads1/Pthreads2 entram
+ * nas Fases 4, 5 e 6 -- ate la, times.txt mostra 0.000000s pra elas.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "common.h"
+#include "serial.h"
 
 int main(int argc, char *argv[]) {
     MandelbrotParams params;
@@ -30,17 +32,26 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    for (int row = 0; row < params.height; row++) {
-        for (int col = 0; col < params.width; col++) {
-            double re, im;
-            mandelbrot_pixel_to_complex(col, row, params.width, params.height, &re, &im);
-            iterations[mandelbrot_index(row, col, params.width)] =
-                mandelbrot_escape_iterations(re, im, params.max_iter);
-        }
+    double t_serial = 0.0, t_openmp = 0.0, t_pthreads1 = 0.0, t_pthreads2 = 0.0;
+
+    if (mandelbrot_run_serial(&params, iterations, &t_serial) != 0) {
+        free(iterations);
+        return 1;
+    }
+    if (mandelbrot_write_pgm("mandelbrot_afsr_serial.pgm", iterations, &params) != 0) {
+        free(iterations);
+        return 1;
     }
 
-    int status = mandelbrot_write_pgm("mandelbrot_afsr_serial.pgm", iterations, &params);
+    /* TODO Fase 4: mandelbrot_run_openmp + mandelbrot_afsr_openmp.pgm */
+    /* TODO Fase 5: mandelbrot_run_pthreads1 + mandelbrot_afsr_pthreads1.pgm */
+    /* TODO Fase 6: mandelbrot_run_pthreads2 + mandelbrot_afsr_pthreads2.pgm */
+
+    if (mandelbrot_write_times("times.txt", t_serial, t_openmp, t_pthreads1, t_pthreads2) != 0) {
+        free(iterations);
+        return 1;
+    }
 
     free(iterations);
-    return status == 0 ? 0 : 1;
+    return 0;
 }
