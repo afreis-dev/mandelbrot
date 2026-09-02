@@ -5,14 +5,15 @@
  * sobre um unico buffer de iteracoes reaproveitado entre elas, escrevendo
  * um .pgm por implementacao e um times.txt com as 4 medicoes.
  *
- * Fase 3: so a serial existe de verdade. OpenMP/Pthreads1/Pthreads2 entram
- * nas Fases 4, 5 e 6 -- ate la, times.txt mostra 0.000000s pra elas.
+ * Fase 4: serial + OpenMP existem. Pthreads1/Pthreads2 entram nas Fases 5
+ * e 6 -- ate la, times.txt mostra 0.000000s pra elas.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "common.h"
+#include "openmp.h"
 #include "serial.h"
 
 int main(int argc, char *argv[]) {
@@ -43,7 +44,15 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    /* TODO Fase 4: mandelbrot_run_openmp + mandelbrot_afsr_openmp.pgm */
+    if (mandelbrot_run_openmp(&params, iterations, &t_openmp) != 0) {
+        free(iterations);
+        return 1;
+    }
+    if (mandelbrot_write_pgm("mandelbrot_afsr_openmp.pgm", iterations, &params) != 0) {
+        free(iterations);
+        return 1;
+    }
+
     /* TODO Fase 5: mandelbrot_run_pthreads1 + mandelbrot_afsr_pthreads1.pgm */
     /* TODO Fase 6: mandelbrot_run_pthreads2 + mandelbrot_afsr_pthreads2.pgm */
 
