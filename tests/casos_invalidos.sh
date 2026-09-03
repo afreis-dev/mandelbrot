@@ -4,18 +4,18 @@
 # Roda uma bateria de invocacoes invalidas e confere, pra cada uma: stdout
 # vazio, exit code != 0, e alguma mensagem em stderr.
 #
-# Nota sobre falha de pthread_create (Fase 7): forcada e verificada de
-# verdade durante o desenvolvimento (ver docs/diario.md, entradas 14-16),
-# mas NAO fica automatizada aqui contra o binario completo: como as 4
-# implementacoes rodam em sequencia numa unica execucao compartilhando o
-# mesmo num_threads, um limite de recursos apertado o suficiente pra
-# quebrar pthread_create tambem quebra a criacao de threads do OpenMP
-# (que roda primeiro) -- e o libgomp aborta o processo com a MENSAGEM DELE
-# (nao a minha) antes do meu codigo em pthreads1.c/pthreads2.c rodar. A
-# falha de pthread_create do meu proprio codigo foi verificada em
-# isolamento com um harness a parte (fora deste repo); o comportamento em
-# si (sem crash, sem trava, mensagem coerente, limpeza correta mesmo com
-# threads parcialmente criadas) esta confirmado e documentado no diario.
+# Nota sobre falha de pthread_create: forcada e verificada de verdade
+# durante o desenvolvimento, mas NAO fica automatizada aqui contra o
+# binario completo: como as 4 implementacoes rodam em sequencia numa
+# unica execucao compartilhando o mesmo num_threads, um limite de
+# recursos apertado o suficiente pra quebrar pthread_create tambem
+# quebra a criacao de threads do OpenMP (que roda primeiro) -- e o
+# libgomp aborta o processo com a MENSAGEM DELE (nao a minha) antes do
+# meu codigo em pthreads1.c/pthreads2.c rodar. A falha de pthread_create
+# do meu proprio codigo foi verificada em isolamento com um harness a
+# parte (fora deste repo); o comportamento em si (sem crash, sem trava,
+# mensagem coerente, limpeza correta mesmo com threads parcialmente
+# criadas) esta confirmado.
 set -u
 BIN="${1:-./mandelbrot}"
 FAIL=0
