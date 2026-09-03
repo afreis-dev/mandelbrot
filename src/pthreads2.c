@@ -6,15 +6,6 @@
 #include <string.h>
 #include <time.h>
 
-/*
- * Fila circular limitada de indices de linha, compartilhada entre a
- * thread despachante (produtora) e as threads trabalhadoras (consumidoras).
- * 'done' sinaliza "acabaram as linhas, pode sair quando a fila esvaziar".
- * 'abort' sinaliza "algo falhou na criacao das threads, todo mundo sai
- * ja" -- sem ela, uma falha de pthread_create no meio da criacao poderia
- * deixar o despachante ou trabalhadoras ja criadas bloqueadas pra sempre
- * esperando um sinal que nunca chegaria.
- */
 typedef struct {
     int *buffer;
     int capacity;
@@ -55,13 +46,13 @@ static void *pthreads2_dispatcher(void *arg) {
         q->buffer[q->tail] = row;
         q->tail = (q->tail + 1) % q->capacity;
         q->count++;
-        pthread_cond_signal(&q->not_empty); /* so precisa acordar 1 consumidor */
+        pthread_cond_signal(&q->not_empty);
         pthread_mutex_unlock(&q->mutex);
     }
 
     pthread_mutex_lock(&q->mutex);
     q->done = 1;
-    pthread_cond_broadcast(&q->not_empty); /* acorda TODAS as trabalhadoras */
+    pthread_cond_broadcast(&q->not_empty);
     pthread_mutex_unlock(&q->mutex);
     return NULL;
 }
@@ -86,8 +77,6 @@ static void *pthreads2_worker(void *arg) {
         pthread_cond_signal(&q->not_full);
         pthread_mutex_unlock(&q->mutex);
 
-        /* calculo da linha inteira FORA do lock -- so a retirada do
-         * indice e protegida, o trabalho de verdade roda livre. */
         for (int col = 0; col < p->width; col++) {
             double re, im;
             mandelbrot_pixel_to_complex(col, row, p->width, p->height, &re, &im);
@@ -98,8 +87,6 @@ static void *pthreads2_worker(void *arg) {
     return NULL;
 }
 
-/* Libera tudo que foi inicializado/alocado ate o ponto da falha. Cada
- * ponteiro/flag pode estar em "ainda nao existe" e a funcao trata isso. */
 static void pthreads2_cleanup(Pthreads2Queue *q, int mutex_ok, int not_empty_ok, int not_full_ok,
                                pthread_t *worker_tids, Pthreads2WorkerArgs *wargs) {
     if (not_full_ok) pthread_cond_destroy(&q->not_full);
@@ -113,8 +100,6 @@ static void pthreads2_cleanup(Pthreads2Queue *q, int mutex_ok, int not_empty_ok,
 int mandelbrot_run_pthreads2(const MandelbrotParams *p, int *iterations, double *out_seconds) {
     int n = p->num_threads;
 
-    /* A fila nunca precisa de mais espaco que o total de linhas -- esse
-     * e o numero maximo de itens que o despachante vai empurrar. */
     int capacity = 2 * n;
     if (capacity > p->height) capacity = p->height;
     if (capacity < 1) capacity = 1;
@@ -183,9 +168,6 @@ int mandelbrot_run_pthreads2(const MandelbrotParams *p, int *iterations, double 
     }
 
     if (failed) {
-        /* Sinaliza abort e acorda quem ja possa estar bloqueado esperando
-         * (despachante esperando espaco, trabalhadoras esperando item) --
-         * senao as threads ja criadas ficam presas pra sempre. */
         pthread_mutex_lock(&queue.mutex);
         queue.abort_flag = 1;
         pthread_cond_broadcast(&queue.not_full);

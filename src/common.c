@@ -12,13 +12,6 @@ static void print_usage(void) {
             "uso: mandelbrot <largura> <altura> <max_iteracoes> <num_threads>\n");
 }
 
-/*
- * Converte 'text' para um inteiro estritamente positivo, cabendo em int.
- * Rejeita: string vazia, lixo apos o numero, overflow de 'long' (ERANGE)
- * ou overflow ao encaixar em 'int', e valores <= 0. Em qualquer erro, ja
- * imprime a mensagem em stderr (usando 'field_name' no texto) e retorna
- * -1 -- quem chama nao precisa imprimir nada de novo.
- */
 static int parse_positive_int(const char *text, const char *field_name, int *out) {
     if (text == NULL || text[0] == '\0') {
         fprintf(stderr, "mandelbrot: valor invalido para %s: ''\n", field_name);
@@ -64,9 +57,6 @@ int mandelbrot_parse_args(int argc, char *argv[], MandelbrotParams *out) {
 }
 
 int mandelbrot_buffer_pixel_count(int width, int height, size_t *out) {
-    /* width/height ja chegam > 0 aqui (garantido por mandelbrot_parse_args),
-     * mas a funcao nao assume isso silenciosamente -- se width ou height
-     * fossem 0 o produto tambem seria 0, sem risco de overflow. */
     size_t w = (size_t) width;
     size_t h = (size_t) height;
 
@@ -112,9 +102,6 @@ int mandelbrot_write_pgm(const char *path, const int *iterations, const Mandelbr
         return -1;
     }
 
-    /* '\n' entre linhas, nunca depois da ultima -- o arquivo de referencia
-     * do professor (tests/oficiais/teste1_serial.txt) nao tem newline no
-     * final; ver docs/diario.md (achado real na Fase 2, nao suposicao). */
     int write_failed = 0;
     for (int row = 0; row < p->height && !write_failed; row++) {
         if (row > 0 && fputc('\n', f) == EOF) {

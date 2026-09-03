@@ -1,14 +1,3 @@
-/*
- * mandelbrot - Implementacao 2 (Infraestrutura de Software, CESAR School)
- *
- * Orquestra as 4 implementacoes (serial, OpenMP, Pthreads1, Pthreads2)
- * sobre um unico buffer de iteracoes reaproveitado entre elas, escrevendo
- * um .pgm por implementacao e um times.txt com as 4 medicoes.
- *
- * Fase 6: as 4 implementacoes existem (serial, OpenMP, Pthreads1 com
- * divisao estatica, Pthreads2 com dispatcher dinamico).
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -9,8 +9,8 @@
 typedef struct {
     const MandelbrotParams *params;
     int *iterations;
-    int start_row; /* inclusive */
-    int end_row;   /* exclusivo */
+    int start_row;
+    int end_row;
 } Pthreads1WorkerArgs;
 
 static void *pthreads1_worker(void *arg) {
@@ -40,9 +40,6 @@ int mandelbrot_run_pthreads1(const MandelbrotParams *p, int *iterations, double 
         return -1;
     }
 
-    /* base+resto: as primeiras 'resto' threads recebem 1 linha a mais.
-     * Essa formula sozinha ja cobre num_threads > altura sem 'if'
-     * especial: threads excedentes recebem start==end (0 linhas). */
     int base = p->height / n;
     int remainder = p->height % n;
 
@@ -61,7 +58,6 @@ int mandelbrot_run_pthreads1(const MandelbrotParams *p, int *iterations, double 
 
         int rc = pthread_create(&tids[i], NULL, pthreads1_worker, &wargs[i]);
         if (rc != 0) {
-            /* pthread_create devolve o erro diretamente -- nao seta errno. */
             fprintf(stderr, "mandelbrot: pthreads1: pthread_create: %s\n", strerror(rc));
             for (int j = 0; j < created; j++) {
                 pthread_join(tids[j], NULL);
